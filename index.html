@@ -4,21 +4,78 @@
     <meta charset="utf-8">
     <title></title>
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8=" crossorigin="anonymous"></script>
+    <style>
+      .input{
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 10px;
+        background: skyblue;
+      }
+      .input textarea{
+        flex:1
+      }
+      .other{
+        text-align:right;
+      }
+      #chat div {
+        margin-bottom:10px;
+      }
+      #chat span {
+        display: inline-block;
+        padding: 10px;
+        background:gainsboro;
+        border-radius: 10px;
+      }
+    </style>
   </head>
   <body>
-    <input type="text" id="message" placeholder="message here">
-    <button type="button" id="submit">submit</button>
-
-    <div id="chat"></div>
-
+    <div id="nickname-wrapper">
+      <input id="nickname" placeholder="input your username">
+      <button type="button" id="submitNickname">submit</button>
+    </div>
+    <div id="chat-wrapper" style="display:none">
+      <div id="chat"></div>
+      <div class="input">
+        <textarea id="message" placeholder="message here"></textarea>
+        <button type="button" id="submit">submit</button>
+      </div>
+    </div>
     <script src="/socket.io/socket.io.js" charset="utf-8"></script>
     <script type="text/javascript">
       var io = io()
+      let isLogin = false;
+      let user;
       io.on('chat', function(data) {
-        $("#chat").append(data.message)
+        $("#chat").append(`
+          <div class="${user === data.user ? 'self' : 'other'}">
+            <span>${data.message}</span>
+          </div>`
+        )
+      })
+      io.on('username', function(data) {
+        if(!user && isLogin){
+          user = data;
+          $('#nickname-wrapper').hide()
+          $('#chat-wrapper').show()
+        }
+      })
+      io.on('notif', function(data) {
+        alert(data)
+      })
+      $("#submitNickname").click(function() {
+        isLogin = true;
+        io.emit('username', $('#nickname').val())
       })
       $("#submit").click(function() {
-        io.emit('chat',{message:$("#message").val()})
+        io.emit('chat',
+          {
+            user,
+            message:$("#message").val()
+          }
+        )
       })
     </script>
   </body>
