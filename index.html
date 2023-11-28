@@ -79,7 +79,8 @@
       io.on('users', function(data) {
         console.log('users', data)
       })
-      io.on('notif', function(data) {
+      io.on('notification', function(data) {
+        console.log(data)
         alert(data)
       })
       $("#login").click(function() {
